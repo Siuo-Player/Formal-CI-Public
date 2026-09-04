@@ -14,12 +14,13 @@ its state to itself, independently of the transition relation. -/
 theorem singleton_boundedWitness
     {n : Nat} {r : Transition n} (start : State n) :
     BoundedWitness r start start [start] := by
-  refine ⟨by simp, ?_, ?_, ?_, ?_, ?_⟩
-  · simp
-  · simp
-  · simp [SimplePath]
-  · simp [TransitionValid]
-  · decide
+  have hpath : SimplePath ([start] : List (State n)) := by
+    simp [SimplePath]
+  have hvalid : TransitionValid r ([start] : List (State n)) := by
+    simp [TransitionValid]
+  have hbound : ([start] : List (State n)).length - 1 ≤ n - 1 := by
+    exact simplePath_edge_count_le_state_count_sub_one hpath (by simp)
+  exact ⟨by simp, by simp, by simp, hpath, hvalid, hbound⟩
 
 /-- Under the current witness definition, a zero-edge bridge is therefore a
 legitimate witness from a state to itself. -/
