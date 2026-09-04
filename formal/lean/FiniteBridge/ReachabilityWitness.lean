@@ -1,13 +1,16 @@
 import Mathlib
-import FiniteBridge
+import FiniteBridge.Dependency
 
 namespace FiniteBridge
 
 def ChainWitness {α : Type} (r : α → α → Prop) (start target : α) (xs : List α) : Prop :=
-  xs ≠ [] ∧
-  xs.head ‹xs ≠ []› = start ∧
-  xs.getLast ‹xs ≠ []› = target ∧
-  TransitionValid (fun a b => r a b) xs
+  ∃ hne : xs ≠ [],
+    xs.head hne = start ∧
+    xs.getLast hne = target ∧
+    match xs with
+    | [] => True
+    | [_] => True
+    | a :: b :: rest => r a b ∧ ChainWitness r b target (b :: rest)
 
 theorem reflTransGen_to_chainWitness
     {α : Type} {r : α → α → Prop} {start target : α}
@@ -16,42 +19,45 @@ theorem reflTransGen_to_chainWitness
   induction h with
   | refl =>
       refine ⟨[start], ?_⟩
-      simp [ChainWitness, TransitionValid]
+      simp [ChainWitness]
   | tail hrel hstep ih =>
       rcases ih with ⟨xs, hxs⟩
-      have hne : xs ≠ [] := hxs.1
-      have hlast : xs.getLast hne = _ := hxs.2.2.1
       refine ⟨xs.concat target, ?_⟩
-      simp [ChainWitness, TransitionValid, hne, hlast, hstep, hxs.2.2.2]
+      rcases hxs with ⟨hne, hhead, hlast, hchain⟩
+      refine ⟨by simp [hne], ?_, ?_, ?_⟩
+      · simpa using hhead
+      · simp [List.getLast_concat, hlast]
+      · cases xs with
+        | nil => contradiction
+        | cons a rest =>
+            cases rest with
+            | nil => simp [hchain, hstep]
+            | cons b rest =>
+                simp [hchain, hstep]
 
-/-- A non-empty list witness induces the reflexive-transitive relation closure. -/
+/-- A non-empty explicit list witness induces the reflexive-transitive relation closure. -/
 theorem chainWitness_to_reflTransGen
     {α : Type} {r : α → α → Prop} {start target : α} {xs : List α}
     (h : ChainWitness r start target xs) :
     Relation.ReflTransGen r start target := by
-  have hne : xs ≠ [] := h.1
-  have hhead : xs.head hne = start := h.2.1
-  have hlast : xs.getLast hne = target := h.2.2.1
-  have hvalid : TransitionValid (fun a b => r a b) xs := h.2.2.2
+  rcases h with ⟨hne, hhead, hlast, hchain⟩
   subst start
   induction xs with
   | nil => contradiction
-  | cons a rest ih =>
+  | cons a rest =>
       cases rest with
       | nil =>
-          simpa using (show target = a from hlast.symm)
+          simpa using hlast.symm
       | cons b rest =>
-          have hab : r a b := hvalid.1
-          have htail : TransitionValid (fun x y => r x y) (b :: rest) := hvalid.2
+          have hab : r a b := hchain.1
           have hrest : Relation.ReflTransGen r b target := by
             apply chainWitness_to_reflTransGen
-            refine ⟨by simp, ?_, hlast, htail⟩
+            refine ⟨by simp, ?_, hlast, hchain.2⟩
             rfl
           exact Relation.ReflTransGen.head hab hrest
 
 /-- Reachability is equivalent to existence of an explicit non-empty list
-witness. This is a representation theorem; simplicity is intentionally not
-claimed yet. -/
+witness. Simplicity is deliberately not claimed here. -/
 theorem reflTransGen_iff_chainWitness
     {α : Type} {r : α → α → Prop} {start target : α} :
     Relation.ReflTransGen r start target ↔
@@ -64,6 +70,6 @@ theorem reflTransGen_iff_chainWitness
 example :
     ∃ xs : List Nat, ChainWitness (fun a b : Nat => a < b) 2 5 xs := by
   refine ⟨[2, 5], ?_⟩
-  simp [ChainWitness, TransitionValid]
+  simp [ChainWitness]
 
 end FiniteBridge
