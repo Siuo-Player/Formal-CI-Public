@@ -36,16 +36,18 @@ theorem locallyPropagatesChange_of_localCompositionalSemantics
     have hinput : InputBefore node ↔ InputAfter node := by
       exact not_not.mp hseed
     have hpredEq :
-        (fun pred _ => Before pred) =
-        (fun pred _ => After pred) := by
+        (fun (pred : α) (_hpred : Edge pred node) => Before pred) =
+        (fun (pred : α) (_hpred : Edge pred node) => After pred) := by
       funext pred
       funext hpred
       apply propext
       by_contra hnot
       exact hno ⟨pred, hpred, hnot⟩
     have heval :
-        Eval node (InputBefore node) (fun pred _ => Before pred) =
-        Eval node (InputAfter node) (fun pred _ => After pred) := by
+        Eval node (InputBefore node)
+            (fun (pred : α) (hpred : Edge pred node) => Before pred) =
+        Eval node (InputAfter node)
+            (fun (pred : α) (hpred : Edge pred node) => After pred) := by
       rw [propext hinput, hpredEq]
     exact (hsem node).1.trans ((propext heval).trans (hsem node).2.symm)
 
