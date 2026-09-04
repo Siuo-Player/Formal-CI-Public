@@ -6,6 +6,7 @@ import FiniteBridge.DependencyClosure
 import FiniteBridge.SemanticDependency
 import FiniteBridge.SemanticLocality
 import FiniteBridge.SemanticExactness
+import FiniteBridge.ChainReachability
 
 namespace FiniteBridge
 
