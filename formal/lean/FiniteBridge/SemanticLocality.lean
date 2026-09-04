@@ -49,7 +49,13 @@ theorem locallyPropagatesChange_of_localCompositionalSemantics
         Eval node (InputAfter node)
             (fun (pred : α) (hpred : Edge pred node) => After pred) := by
       rw [propext hinput, hpredEq]
-    exact (hsem node).1.trans ((propext heval).trans (hsem node).2.symm)
+    have heval_iff :
+        Eval node (InputBefore node)
+            (fun (pred : α) (hpred : Edge pred node) => Before pred) ↔
+        Eval node (InputAfter node)
+            (fun (pred : α) (hpred : Edge pred node) => After pred) := by
+      rw [heval]
+    exact (hsem node).1.trans (heval_iff.trans (hsem node).2.symm)
 
 theorem semantically_changed_affected_of_localCompositionalSemantics
     {α : Type}
