@@ -7,54 +7,28 @@ def ChainWitness {α : Type} (r : α → α → Prop) (start target : α) (xs : 
   ∃ hne : xs ≠ [],
     xs.head hne = start ∧
     xs.getLast hne = target ∧
-    match xs with
-    | [] => True
-    | [_] => True
-    | a :: b :: rest => r a b ∧ ChainWitness r b target (b :: rest)
+    List.IsChain r xs
 
 theorem reflTransGen_to_chainWitness
     {α : Type} {r : α → α → Prop} {start target : α}
     (h : Relation.ReflTransGen r start target) :
     ∃ xs : List α, ChainWitness r start target xs := by
-  induction h with
-  | refl =>
-      refine ⟨[start], ?_⟩
-      simp [ChainWitness]
-  | tail hrel hstep ih =>
-      rcases ih with ⟨xs, hxs⟩
-      refine ⟨xs.concat target, ?_⟩
-      rcases hxs with ⟨hne, hhead, hlast, hchain⟩
-      refine ⟨by simp [hne], ?_, ?_, ?_⟩
-      · simpa using hhead
-      · simp [List.getLast_concat, hlast]
-      · cases xs with
-        | nil => contradiction
-        | cons a rest =>
-            cases rest with
-            | nil => simp [hchain, hstep]
-            | cons b rest =>
-                simp [hchain, hstep]
+  rcases List.exists_isChain_ne_nil_of_relationReflTransGen h with
+    ⟨xs, hne, hchain, hhead, hlast⟩
+  exact ⟨xs, hne, hhead, hlast, hchain⟩
 
-/-- A non-empty explicit list witness induces the reflexive-transitive relation closure. -/
+/-- A non-empty explicit chain witness induces the reflexive-transitive relation closure. -/
 theorem chainWitness_to_reflTransGen
     {α : Type} {r : α → α → Prop} {start target : α} {xs : List α}
     (h : ChainWitness r start target xs) :
     Relation.ReflTransGen r start target := by
   rcases h with ⟨hne, hhead, hlast, hchain⟩
-  subst start
-  induction xs with
+  cases xs with
   | nil => contradiction
   | cons a rest =>
-      cases rest with
-      | nil =>
-          simpa using hlast.symm
-      | cons b rest =>
-          have hab : r a b := hchain.1
-          have hrest : Relation.ReflTransGen r b target := by
-            apply chainWitness_to_reflTransGen
-            refine ⟨by simp, ?_, hlast, hchain.2⟩
-            rfl
-          exact Relation.ReflTransGen.head hab hrest
+      have hhead' : a = start := by simpa using hhead
+      subst start
+      exact List.relationReflTransGen_of_exists_isChain_cons rest hchain hlast
 
 /-- Reachability is equivalent to existence of an explicit non-empty list
 witness. Simplicity is deliberately not claimed here. -/
