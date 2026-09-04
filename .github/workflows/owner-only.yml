@@ -1,0 +1,21 @@
+name: owner-only
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require repository owner
+        env:
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          test "$ACTOR" = "Siuo-Player" || {
+            echo "This repository is owner-controlled; only Siuo-Player may contribute changes."
+            exit 1
+          }
