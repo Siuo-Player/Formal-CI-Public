@@ -4,6 +4,7 @@ import FiniteBridge.BoundedResult
 import FiniteBridge.Dependency
 import FiniteBridge.DependencyClosure
 import FiniteBridge.SemanticDependency
+import FiniteBridge.SemanticLocality
 
 namespace FiniteBridge
 
