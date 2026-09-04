@@ -1,4 +1,4 @@
-import FiniteBridge.Dependency
+import FiniteBridge.DependencyClosure
 
 namespace FiniteBridge
 
