@@ -45,6 +45,8 @@ jobs:
       - name: Install pinned Lean toolchain
         if: steps.cache.outputs.cache-hit != 'true'
         run: elan toolchain install leanprover/lean4:v4.33.0
+      - name: Select pinned Lean toolchain
+        run: elan default leanprover/lean4:v4.33.0
       - name: Verify Lean toolchain
         run: |
           set -euo pipefail
