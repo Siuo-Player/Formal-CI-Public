@@ -3,6 +3,7 @@ import FiniteBridge.ResultSemantics
 import FiniteBridge.BoundedResult
 import FiniteBridge.Dependency
 import FiniteBridge.DependencyClosure
+import FiniteBridge.SemanticDependency
 
 namespace FiniteBridge
 
