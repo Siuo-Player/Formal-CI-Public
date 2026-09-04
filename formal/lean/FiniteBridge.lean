@@ -5,6 +5,7 @@ import FiniteBridge.Dependency
 import FiniteBridge.DependencyClosure
 import FiniteBridge.SemanticDependency
 import FiniteBridge.SemanticLocality
+import FiniteBridge.SemanticExactness
 
 namespace FiniteBridge
 
