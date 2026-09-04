@@ -47,11 +47,10 @@ example :
     Affected ChainEdge ({2, 4} : Set Nat) 5 := by
   refine ⟨2, ?_, ?_⟩
   · simp
-  · exact Relation.ReflTransGen.single (by decide)
+  · exact Relation.ReflTransGen.single (show (2 : Nat) < 5 by decide)
 
 example :
     SemanticallyChanged ChainBefore (ChainAfterSeeds ({2, 4} : Set Nat)) 5 := by
   simp [SemanticallyChanged, StableUnderEdit, ChainBefore, ChainAfterSeeds]
-  exact ⟨2, by simp, by decide⟩
 
 end FiniteBridge
