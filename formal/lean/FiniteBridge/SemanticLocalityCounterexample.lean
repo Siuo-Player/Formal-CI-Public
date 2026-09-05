@@ -39,8 +39,7 @@ theorem affected_does_not_imply_semantically_changed :
           SemanticallyChanged Before After node) := by
   intro h
   have ha := h OverApproxEdge EmptyBefore EmptyAfter SingleSeed false
-    (false_node_is_affected (Edge := OverApproxEdge)
-      (Seeds := SingleSeed) (node := false))
+    false_node_is_affected
   exact false_node_is_not_semantically_changed ha
 
 end FiniteBridge
