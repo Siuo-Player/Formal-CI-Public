@@ -19,7 +19,7 @@ def targetWitnessValid (start target : State n) (w : State n) : Prop :=
 /-- Semantic target classifier induced by the complete `n - 1`-round search.
 This is intentionally noncomputable: `successors` is a semantic filter over a
 propositional relation, not an executable search interface. -/
-noncomputable def targetSearchResult : SearchResult (State n) := by
+noncomputable def targetSearchResult (start target : State n) : SearchResult (State n) := by
   classical
   by_cases htarget : target ∈ (run (r := r) (n - 1) (initial start)).visited
   · exact SearchResult.found target
