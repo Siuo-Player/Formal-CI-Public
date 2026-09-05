@@ -48,21 +48,24 @@ theorem run_visited_card_ge_succ_of_frontier_nonempty :
   induction fuel with
   | zero =>
       intro hfront
-      change start ∈ ({start} : Finset (State n))
-      simp
+      have hvisited :
+          (run (r := r) 0 (initial start)).visited.Nonempty :=
+        (initial (r := r) start).visited.nonempty
+      exact Nat.succ_le_iff.mp (by simpa [run] using hvisited)
   | succ fuel ih =>
       intro hfront
       have hprevfront :
           (run (r := r) fuel (initial start)).frontier.Nonempty :=
         old_frontier_nonempty_of_step_frontier_nonempty
-          (r := r)
-          (state := run (r := r) fuel (initial start))
-          (hfront := hfront)
-      have hlower := ih hprevfront
-      have hstrict := step_visited_card_strict_of_step_frontier_nonempty
-        (r := r)
-        (state := run (r := r) fuel (initial start))
-        (hfront := hfront)
+          (state := run (r := r) fuel (initial start)) hfront
+      have hlower : fuel + 1 ≤
+          (run (r := r) fuel (initial start)).visited.card := ih hprevfront
+      have hstrict :
+          (run (r := r) fuel (initial start)).visited.card <
+            (run (r := r) (fuel + 1) (initial start)).visited.card := by
+        simpa [run] using
+          (step_visited_card_strict_of_step_frontier_nonempty
+            (state := run (r := r) fuel (initial start)) hfront)
       omega
 
 /-- After `n` rounds, the finite search frontier is empty. The `n - 1`
