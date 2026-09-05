@@ -52,8 +52,7 @@ theorem step_frontier_disjoint_old_visited (state : SearchState n r) :
   classical
   unfold step nextFrontier
   rw [Finset.disjoint_left]
-  intro a ha
-  intro hvisited
+  intro a ha hvisited
   change a ∈ state.frontier.biUnion (fun s => successors (r := r) s) \ state.visited at ha
   exact (Finset.mem_sdiff.mp ha).2 hvisited
 
