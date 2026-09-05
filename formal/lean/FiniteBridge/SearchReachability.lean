@@ -20,8 +20,8 @@ theorem run_visited_implies_reachable
   induction fuel with
   | zero =>
       intro target htarget
-      have htarget' : target = start := by
-        simpa [initial] using htarget
+      change target ∈ ({start} : Finset (State n)) at htarget
+      have htarget' : target = start := Finset.mem_singleton.mp htarget
       subst target
       exact Relation.ReflTransGen.refl
   | succ fuel ih =>
@@ -49,7 +49,7 @@ theorem run_visited_implies_reachable
 reflexive-transitive reachability. -/
 theorem run_visited_subset_reachable
     (fuel : Nat) :
-    (run (r := r) fuel (initial start)).visited ⊆
+    ((run (r := r) fuel (initial start)).visited : Set (State n)) ⊆
       {target | Relation.ReflTransGen r start target} := by
   intro target htarget
   exact run_visited_implies_reachable (r := r) (start := start) fuel htarget
