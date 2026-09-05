@@ -11,14 +11,12 @@ theorem duplicate_decomposition
     ∃ pre middle suffix : List α,
       xs = pre ++ x :: middle ++ x :: suffix := by
   induction hdup with
-  | cons_mem hx ih =>
-      cases ih with
-      | intro pre middle suffix hrepr =>
-          exact ⟨[], [], x :: suffix, by simp [hrepr]⟩
-  | cons_duplicate hdup ih y =>
-      cases ih with
-      | intro pre middle suffix hrepr =>
-          exact ⟨y :: pre, middle, suffix, by simp [hrepr, List.cons_append]⟩
+  | cons_mem hx =>
+      rcases List.mem_iff_append.mp hx with ⟨pre, suffix, hxs⟩
+      exact ⟨[], pre, suffix, by simp [hxs, List.cons_append]
+  | cons_duplicate hdup ih =>
+      rcases ih with ⟨pre, middle, suffix, hrepr⟩
+      exact ⟨_, middle, suffix, by simp [hrepr, List.cons_append]
 
 /-- Removing a repeated-state cycle from a non-empty chain preserves its
 endpoints and strictly decreases its length. -/
@@ -30,7 +28,7 @@ theorem chainWitness_splice_shorter
     ∃ ys : List α,
       ChainWitness r start target ys ∧ ys.length < xs.length := by
   rcases hxs with ⟨hne, hhead, hlast, hchain⟩
-  rcases (List.exists_duplicate_iff_not_nodup.mp hnodup) with ⟨a, hdup⟩
+  rcases (List.exists_duplicate_iff_not_nodup.mpr hnodup) with ⟨a, hdup⟩
   rcases duplicate_decomposition hdup with ⟨pre, middle, suffix, rfl⟩
   let ys := pre ++ a :: suffix
   have hchain' : List.IsChain r ys := by
@@ -65,12 +63,9 @@ theorem chainWitness_to_simpleChainWitness
       by_cases hnodup : xs.Nodup
       · exact ⟨xs, hxs, hnodup⟩
       · rcases chainWitness_splice_shorter hxs hnodup with ⟨ys, hys, hlt⟩
-        apply ih ys.length
-        · simpa [hlen] using hlt
-        · exact ys
-        · exact start
-        · exact target
-        · exact hys
+        have hlt' : ys.length < n := by
+          simpa [hlen] using hlt
+        exact ih ys.length hlt' ys start target hys
 
 /-- Reachability over any relation admits a simple non-empty chain witness. -/
 theorem reflTransGen_to_simpleChainWitness
@@ -85,8 +80,6 @@ theorem reflTransGen_to_simpleChainWitness
   rcases reflTransGen_to_chainWitness h with ⟨xs, hxs⟩
   rcases chainWitness_to_simpleChainWitness hxs with ⟨ys, hys, hsimple⟩
   rcases hys with ⟨hne, hhead, hlast, hchain⟩
-  refine ⟨ys, hne, ?_, ?_, hsimple, hchain⟩
-  · simpa only [proof_irrelheq] using hhead
-  · simpa only [proof_irrelheq] using hlast
+  exact ⟨ys, hne, hhead, hlast, hsimple, hchain⟩
 
 end FiniteBridge
