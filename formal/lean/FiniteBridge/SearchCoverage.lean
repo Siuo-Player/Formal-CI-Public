@@ -1,5 +1,6 @@
 import Mathlib
-import FiniteBridge.BoundedReachability
+import FiniteBridge.Foundations
+import FiniteBridge.SimpleWitness
 import FiniteBridge.BoundedReachabilityFuel
 import FiniteBridge.FiniteSearchState
 
@@ -116,23 +117,16 @@ theorem reachWithin_mem_run
       · simpa [run] using mem_step_visited_of_frontier hfront hstep
 
 /-- Every reachable target in the finite state space is discovered within `n - 1`
-rounds. This closes the ReachWithin-to-boundary coverage implication required by G6. -/
+rounds. This is the ReachWithin-to-boundary coverage implication required by G6. -/
 theorem reachable_mem_run_n_sub_one
     (hreach : Relation.ReflTransGen r start target) :
     target ∈ (run (r := r) (n - 1) (initial start)).visited := by
-  rcases reachable_has_edge_bound hreach with ⟨xs, hw⟩
-  rcases hw with ⟨hne, hhead, hlast, hsimple, hvalid, hbound⟩
-  have hchain : List.IsChain r xs := by
-    induction xs with
-    | nil => simp
-    | cons x xs ih =>
-        cases xs with
-        | nil => simp
-        | cons y ys =>
-            exact ⟨by simpa [TransitionValid] using hvalid |>.1, by
-              exact ih (by simpa [TransitionValid] using hvalid |>.2)⟩
+  rcases reflTransGen_to_simpleChainWitness hreach with
+    ⟨xs, hne, hhead, hlast, hsimple, hchain⟩
+  have hbound : xs.length - 1 ≤ n - 1 :=
+    simplePath_edge_count_le_state_count_sub_one hsimple hne
+  have htmp := reachWithin_of_nonempty_chain (r := r) hne hchain
   have hwithin : ReachWithin r start (xs.length - 1) target := by
-    have htmp := reachWithin_of_nonempty_chain (r := r) hne hchain
     simpa [hhead, hlast] using htmp
   have hfound := reachWithin_mem (r := r) hwithin
   exact run_visited_mono_of_le (r := r) start hbound hfound
