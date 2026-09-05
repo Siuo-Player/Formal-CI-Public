@@ -10,20 +10,13 @@ theorem isChain_cycle_splice
     {pre middle suffix : List α} {a : α}
     (hchain : List.IsChain r (pre ++ a :: middle ++ a :: suffix)) :
     List.IsChain r (pre ++ a :: suffix) := by
-  induction pre with
-  | nil =>
-      cases middle with
-      | nil =>
-          simpa using hchain
-      | cons b middle =>
-          simpa only [List.nil_append, List.cons_append] at hchain ⊢
-          exact hchain.2
-  | cons p pre ih =>
-      have hchain' : List.IsChain r (p :: (pre ++ a :: middle ++ a :: suffix)) := by
-        simpa only [List.cons_append] using hchain
-      have ih' : List.IsChain r (pre ++ a :: suffix) := by
-        apply ih
-        simpa only [List.cons_append] using hchain'
-      simpa only [List.cons_append] using (List.IsChain.cons_of_ne_nil (by simp) (by exact ih') hchain')
+  have hleft : List.IsChain r (pre ++ [a]) := by
+    apply List.IsChain.left_of_append
+    simpa only [List.append_assoc, List.cons_append, List.singleton_append] using hchain
+  have hright : List.IsChain r ([a] ++ suffix) := by
+    apply List.IsChain.right_of_append
+    simpa only [List.append_assoc, List.cons_append, List.singleton_append] using hchain
+  have hoverlap := List.IsChain.append_overlap hleft hright (by simp : ([a] : List α) ≠ [])
+  simpa only [List.append_assoc, List.singleton_append] using hoverlap
 
 end FiniteBridge
