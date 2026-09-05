@@ -45,9 +45,12 @@ theorem targetSearchResult_sound :
     · intro w hw
       rcases hw with ⟨hwt, hwreach⟩
       subst w
-      exact mem_run_n_sub_one_iff_reachable.mpr hwreach |> htarget
+      apply mem_run_n_sub_one_iff_reachable.mpr
+      exact hwreach
     · intro w hwmem hwvalid
-      exact hwvalid ⟨w, hwmem⟩
+      rcases hwvalid with ⟨hwt, hreach⟩
+      subst w
+      exact htarget (mem_run_n_sub_one_iff_reachable.mpr hreach)
 
 end
 end SearchState
