@@ -20,7 +20,7 @@ noncomputable def successors (s : State n) : Finset (State n) := by
 
 noncomputable def nextFrontier (state : SearchState n r) : Finset (State n) := by
   classical
-  exact state.frontier.biUnion (fun s => successors (r := r) s) \ state.visited
+  exact state.frontier.biUnion (fun s => successors (r := r) s) \\ state.visited
 
 noncomputable def step (state : SearchState n r) : SearchState n r := by
   classical
@@ -51,9 +51,9 @@ theorem step_frontier_disjoint_old_visited (state : SearchState n r) :
     Disjoint (step (r := r) state).frontier state.visited := by
   classical
   unfold step nextFrontier
-  simp only [Finset.disjoint_left, Finset.mem_sdiff]
-  intro a ha x hx
-  exact ha.2 hx
+  rw [Finset.disjoint_left]
+  intro a ha
+  exact ha.2
 
 theorem initial_frontier_subset_visited (start : State n) :
   (initial (r := r) start).frontier ⊆ (initial (r := r) start).visited := by
