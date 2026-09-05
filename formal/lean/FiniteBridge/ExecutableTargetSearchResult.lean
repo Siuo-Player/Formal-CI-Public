@@ -31,16 +31,16 @@ semantic target classifier. -/
 theorem executableTargetSearchResult_eq_semantic :
     executableTargetSearchResult (r := r) start target =
       targetSearchResult (r := r) start target := by
-  unfold executableTargetSearchResult targetSearchResult
-  rw [executableRun_eq_semantic (r := r) (n - 1) (initial start)]
+  simp [executableTargetSearchResult, targetSearchResult,
+    executableRun_eq_semantic (r := r) (n - 1) (initial start)]
 
 /-- The executable target classifier is sound for the target reachability
 predicate. -/
 theorem executableTargetSearchResult_sound :
     SearchResultSound (targetWitnessValid (r := r) start target)
       (executableTargetSearchResult (r := r) start target) := by
-  rw [executableTargetSearchResult_eq_semantic (r := r) start target]
-  exact targetSearchResult_sound (r := r) start target
+  rw [executableTargetSearchResult_eq_semantic (r := r) (start := start) (target := target)]
+  exact targetSearchResult_sound (r := r) (start := start) (target := target)
 
 end
 end SearchState
