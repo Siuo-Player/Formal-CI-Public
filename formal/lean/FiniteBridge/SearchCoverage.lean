@@ -64,17 +64,16 @@ theorem run_visited_mono_of_le (start : State n) {fuel fuel' : Nat}
       (run (r := r) fuel' (initial start)).visited := by
   induction fuel' generalizing fuel with
   | zero =>
-      have : fuel = 0 := Nat.eq_zero_of_le_zero hle
+      have hzero : fuel = 0 := Nat.eq_zero_of_le_zero hle
       subst fuel
       exact subset_rfl
   | succ fuel' ih =>
-      cases hle with
-      | refl =>
-          exact step_visited_monotone (run (r := r) fuel' (initial start))
-      | step hle =>
-          intro x hx
-          exact step_visited_monotone (run (r := r) fuel' (initial start))
-            (ih hle hx)
+      rcases Nat.lt_or_eq_of_le hle with hlt | heq
+      · intro x hx
+        exact step_visited_monotone (run (r := r) fuel' (initial start))
+          (ih (Nat.le_of_lt_succ hlt) hx)
+      · subst fuel
+        exact step_visited_monotone (run (r := r) fuel' (initial start))
 
 theorem reachWithin_of_nonempty_chain
     {xs : List (State n)}
@@ -89,7 +88,7 @@ theorem reachWithin_of_nonempty_chain
           simp at hne ⊢
           exact ReachWithin.self
       | cons b rest =>
-          have hab : r a b := List.IsChain.rel_head hchain
+          have hab : r a b := hchain.rel
           have htail : List.IsChain r (b :: rest) := hchain.tail
           have hneTail : (b :: rest) ≠ [] := by simp
           have hrec := reachWithin_of_nonempty_chain hneTail htail
