@@ -55,13 +55,16 @@ def executableStep (state : SearchState n r) : SearchState n r := by
 theorem executableStep_frontier_eq_semantic (state : SearchState n r) :
     (executableStep (r := r) state).frontier =
       (step (r := r) state).frontier := by
-  simp [executableStep, executableNextFrontier_eq_semantic]
+  change executableNextFrontier (r := r) state = nextFrontier (r := r) state
+  exact executableNextFrontier_eq_semantic (r := r) state
 
 /-- The executable step has the same visited set as the semantic step. -/
 theorem executableStep_visited_eq_semantic (state : SearchState n r) :
     (executableStep (r := r) state).visited =
       (step (r := r) state).visited := by
-  simp [executableStep, executableNextFrontier_eq_semantic]
+  change state.visited ∪ executableNextFrontier (r := r) state =
+    state.visited ∪ nextFrontier (r := r) state
+  rw [executableNextFrontier_eq_semantic (r := r) state]
 
 /-- The executable step is extensionally identical to the semantic step. -/
 theorem executableStep_eq_semantic (state : SearchState n r) :
