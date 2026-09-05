@@ -54,15 +54,6 @@ theorem run_visited_subset_reachable
   intro target htarget
   exact run_visited_implies_reachable (r := r) (start := start) fuel htarget
 
-/-- At the `n - 1` coverage boundary, a target is visited exactly when it is
-semantically reachable. -/
-theorem reachable_iff_mem_run_n_sub_one
-    (hreach : Relation.ReflTransGen r start target) :
-    target ∈ (run (r := r) (n - 1) (initial start)).visited ∧
-      Relation.ReflTransGen r start target := by
-  exact ⟨reachable_mem_run_n_sub_one (r := r) hreach,
-    hreach⟩
-
 /-- The finite search's `n - 1` visited set is exactly the semantic reachable
 set. -/
 theorem mem_run_n_sub_one_iff_reachable :
