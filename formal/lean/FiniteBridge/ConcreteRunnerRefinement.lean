@@ -17,20 +17,19 @@ structure ConcreteSearchState where
   frontier_subset_visited : frontier ⊆ visited
 
 /-- Initial concrete search state containing exactly the start state. -/
-def concreteInitial (start : ConcreteState) : ConcreteSearchState (adapter := adapter) :=
+def concreteInitial (start : ConcreteState) : ConcreteSearchState :=
   ⟨{start}, {start}, by intro x hx; simpa using hx⟩
 
 /-- One concrete frontier expansion using the adapter-provided successor
 enumerator. -/
 def concreteNextFrontier
-    (state : ConcreteSearchState (adapter := adapter)) : Finset ConcreteState :=
+    (state : ConcreteSearchState) : Finset ConcreteState :=
   state.frontier.biUnion adapter.successors \ state.visited
 
 /-- Concrete one-step search. -/
 def concreteStep
-    (state : ConcreteSearchState (adapter := adapter)) :
-    ConcreteSearchState (adapter := adapter) := by
-  let frontier' := adapter.concreteNextFrontier state
+    (state : ConcreteSearchState) : ConcreteSearchState := by
+  let frontier' := concreteNextFrontier adapter state
   let visited' := state.visited ∪ frontier'
   have hsubset : frontier' ⊆ visited' := by
     intro x hx
@@ -40,7 +39,7 @@ def concreteStep
 /-- Encode a concrete search state into the abstract `SearchState` used by
 G6. The frontier and visited sets are transported through the equivalence. -/
 def encodedSearchState
-    (state : ConcreteSearchState (adapter := adapter)) : SearchState n r := by
+    (state : ConcreteSearchState) : SearchState n r := by
   let frontier' := state.frontier.image adapter.encode
   let visited' := state.visited.image adapter.encode
   have hsubset : frontier' ⊆ visited' := by
@@ -52,19 +51,18 @@ def encodedSearchState
 /-- Encoding the concrete initial state gives the abstract initial search
 state for the encoded start. -/
 theorem encoded_concreteInitial_eq_initial (start : ConcreteState) :
-    adapter.encodedSearchState (adapter.concreteInitial start) =
+    encodedSearchState adapter (concreteInitial adapter start) =
       SearchState.initial (r := r) (adapter.encode start) := by
   ext x <;> simp [encodedSearchState, concreteInitial]
 
 /-- Encoding the frontier produced by one concrete step agrees with the
 abstract executable expansion. -/
 theorem encoded_concreteNextFrontier_eq_executable
-    (state : ConcreteSearchState (adapter := adapter)) :
-    (adapter.encodedSearchState (adapter.concreteStep state)).frontier =
+    (state : ConcreteSearchState) :
+    (encodedSearchState adapter (concreteStep adapter state)).frontier =
       SearchState.executableNextFrontier (r := r)
-        (adapter.encodedSearchState state) := by
-  unfold ConcreteSearchAdapter.encodedSearchState
-  unfold ConcreteSearchAdapter.concreteStep ConcreteSearchAdapter.concreteNextFrontier
+        (encodedSearchState adapter state) := by
+  unfold encodedSearchState concreteStep concreteNextFrontier
   ext t
   constructor
   · intro ht
@@ -76,10 +74,10 @@ theorem encoded_concreteNextFrontier_eq_executable
       rw [← adapter.mem_successors_iff]
       simpa [hcsenc] using hct
     have hfront : adapter.encode cs ∈
-        (adapter.encodedSearchState state).frontier := by
+        (encodedSearchState adapter state).frontier := by
       exact Finset.mem_image.mpr ⟨cs, hcs, rfl⟩
     have htarget : adapter.encode ct ∉
-        (adapter.encodedSearchState state).visited := by
+        (encodedSearchState adapter state).visited := by
       intro hvisited
       rcases Finset.mem_image.mp hvisited with ⟨v, hv, hvenc⟩
       have : ct = v := by simpa [hctenc, hvenc]
@@ -106,32 +104,41 @@ theorem encoded_concreteNextFrontier_eq_executable
         by exact Finset.mem_image.mpr ⟨adapter.encode.symm t, hct, by simp⟩⟩,
         hnotconcrete⟩, by simp⟩
 
+private theorem searchState_ext
+    {a b : SearchState n r}
+    (hfrontier : a.frontier = b.frontier)
+    (hvisited : a.visited = b.visited) :
+    a = b := by
+  cases a with
+  | mk afrontier avisited asubset =>
+      cases b with
+      | mk bfrontier bvisited bsubset =>
+          simp_all
+
 /-- Encoding the entire concrete one-step state agrees with the abstract
 executable one-step search. -/
 theorem encoded_concreteStep_eq_executableStep
-    (state : ConcreteSearchState (adapter := adapter)) :
-    adapter.encodedSearchState (adapter.concreteStep state) =
-      SearchState.executableStep (r := r) (adapter.encodedSearchState state) := by
-  cases state with
-  | mk frontier visited hsubset =>
-      apply SearchState.SearchState.ext
-      · exact adapter.encoded_concreteNextFrontier_eq_executable ⟨frontier, visited, hsubset⟩
-      · simp [encodedSearchState, concreteStep,
-          encoded_concreteNextFrontier_eq_executable]
+    (state : ConcreteSearchState) :
+    encodedSearchState adapter (concreteStep adapter state) =
+      SearchState.executableStep (r := r) (encodedSearchState adapter state) := by
+  apply searchState_ext
+  · exact encoded_concreteNextFrontier_eq_executable adapter state
+  · unfold encodedSearchState concreteStep concreteNextFrontier
+    rw [encoded_concreteNextFrontier_eq_executable adapter state]
+    rfl
 
 /-- Concrete bounded runner. -/
-def concreteRun : Nat → ConcreteSearchState (adapter := adapter) →
-    ConcreteSearchState (adapter := adapter)
+def concreteRun : Nat → ConcreteSearchState → ConcreteSearchState
   | 0, state => state
-  | fuel + 1, state => adapter.concreteStep (adapter.concreteRun fuel state)
+  | fuel + 1, state => concreteStep adapter (concreteRun adapter fuel state)
 
 /-- Every concrete bounded run, after encoding, equals the abstract executable
 runner. This is the refinement theorem needed to transport G6 coverage and
 exhaustion to an implementation satisfying the adapter contract. -/
 theorem encoded_concreteRun_eq_executableRun :
-    ∀ fuel (state : ConcreteSearchState (adapter := adapter)),
-      adapter.encodedSearchState (adapter.concreteRun fuel state) =
-        SearchState.executableRun fuel (adapter.encodedSearchState state) := by
+    ∀ fuel (state : ConcreteSearchState),
+      encodedSearchState adapter (concreteRun adapter fuel state) =
+        SearchState.executableRun fuel (encodedSearchState adapter state) := by
   intro fuel
   induction fuel with
   | zero =>
