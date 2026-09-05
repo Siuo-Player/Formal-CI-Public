@@ -13,10 +13,9 @@ variable {n : Nat} {r : Transition n} {start : State n}
 frontier before that step. -/
 theorem old_frontier_nonempty_of_step_frontier_nonempty
     {state : SearchState n r}
-    ((step (r := r) state).frontier).Nonempty :
+    (hfront : (step (r := r) state).frontier.Nonempty) :
     state.frontier.Nonempty := by
-  intro h
-  rcases h with ⟨x, hx⟩
+  rcases hfront with ⟨x, hx⟩
   change x ∈ nextFrontier (r := r) state at hx
   unfold nextFrontier at hx
   have hbi : x ∈ state.frontier.biUnion (fun s => successors (r := r) s) :=
