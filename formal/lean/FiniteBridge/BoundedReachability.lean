@@ -17,11 +17,7 @@ theorem transitionValid_of_isChain
       cases xs with
       | nil => simp [TransitionValid]
       | cons y ys =>
-          simp only [TransitionValid]
-          rcases (List.isChain_cons_iff (fun a b => r a b) x (y :: ys)).1 hchain with
-            ⟨z, zs, hrel, htail, heq⟩
-          cases heq
-          exact ⟨hrel, ih htail⟩
+          exact ⟨hchain.rel, ih hchain.tail⟩
 
 /-- Every reachable pair of finite states has an endpoint-preserving bounded witness. -/
 theorem boundedWitness_of_reflTransGen
