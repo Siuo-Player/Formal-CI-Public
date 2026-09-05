@@ -21,7 +21,7 @@ theorem duplicate_decomposition
           rcases List.mem_iff_append.mp hx with ⟨pre, suffix, hys⟩
           exact ⟨[], pre, suffix, by
             rw [hys]
-            simp [List.append_assoc]⟩
+            simp⟩
       | cons_duplicate hdup' =>
           rcases ih hdup' with ⟨pre, middle, suffix, hrepr⟩
           exact ⟨y :: pre, middle, suffix, by
@@ -73,7 +73,7 @@ theorem chainWitness_splice_shorter
   have hlast' : ys.getLast hne' = target := by
     dsimp [ys]
     cases suffix with
-    | nil => simpa [List.append_assoc] using hhead
+    | nil => simpa [List.append_assoc] using hlast
     | cons b suffix => simpa [List.append_assoc] using hlast
   refine ⟨ys, ⟨hne', hhead', hlast', hchain'⟩, ?_⟩
   simp [ys]
@@ -92,16 +92,15 @@ theorem chainWitness_to_simpleChainWitness
       · rcases chainWitness_splice_shorter hxs hnodup with ⟨ys, hys, hlt⟩
         have hlt' : ys.length < n := by
           simpa [hlen] using hlt
-        exact ih ys.length hlt' ys hys
+        exact ih ys.length hlt' hys
 
 /-- Reachability over any relation admits a simple non-empty chain witness. -/
 theorem reflTransGen_to_simpleChainWitness
     {α : Type} {r : α → α → Prop} {start target : α}
     (h : Relation.ReflTransGen r start target) :
-    ∃ xs : List α,
-      xs ≠ [] ∧
-      xs.head (by aesop) = start ∧
-      xs.getLast (by aesop) = target ∧
+    ∃ xs : List α, ∃ hne : xs ≠ [],
+      xs.head hne = start ∧
+      xs.getLast hne = target ∧
       xs.Nodup ∧
       List.IsChain r xs := by
   rcases reflTransGen_to_chainWitness h with ⟨xs, hxs⟩
