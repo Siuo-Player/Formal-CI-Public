@@ -19,6 +19,7 @@ import FiniteBridge.SearchExhaustion
 import FiniteBridge.TargetSearchResult
 import FiniteBridge.ExecutableSearchBridge
 import FiniteBridge.ExecutableTargetSearchResult
+import FiniteBridge.ConcreteSearchAdapter
 import FiniteBridge.ZeroLengthBridge
 
 namespace FiniteBridge
