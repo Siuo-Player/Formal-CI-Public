@@ -31,19 +31,23 @@ theorem targetSearchResult_sound :
     SearchResultSound (targetWitnessValid (r := r) start target)
       (targetSearchResult (r := r) start target) := by
   classical
-  unfold targetSearchResult
   by_cases htarget : target ∈
       (run (r := r) (n - 1) (initial start)).visited
-  · simp only [SearchResultSound, targetWitnessValid, htarget,
-      ↓reduceIte]
-    constructor
-    · rfl
-    · exact mem_run_n_sub_one_iff_reachable.mp htarget
-  · simp only [SearchResultSound, htarget, ↓reduceIte]
-    intro hex
-    rcases hex with ⟨w, hwt, hwreach⟩
-    subst w
-    exact htarget (mem_run_n_sub_one_iff_reachable.mpr hwreach)
+  · have hresult : targetSearchResult (r := r) start target = SearchResult.found target := by
+      simp [targetSearchResult, htarget]
+    rw [hresult]
+    apply found_searchResultSound
+    exact ⟨rfl, mem_run_n_sub_one_iff_reachable.mp htarget⟩
+  · have hresult : targetSearchResult (r := r) start target = SearchResult.provedEmpty := by
+      simp [targetSearchResult, htarget]
+    rw [hresult]
+    apply provedEmpty_searchResultSound
+    · intro w hw
+      rcases hw with ⟨hwt, hwreach⟩
+      subst w
+      exact mem_run_n_sub_one_iff_reachable.mpr hwreach |> htarget
+    · intro w hwmem hwvalid
+      exact hwvalid ⟨w, hwmem⟩
 
 end
 end SearchState
