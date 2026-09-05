@@ -47,11 +47,8 @@ theorem run_visited_card_ge_succ_of_frontier_nonempty :
   intro fuel
   induction fuel with
   | zero =>
-      intro hfront
-      have hvisited :
-          (run (r := r) 0 (initial start)).visited.Nonempty :=
-        (initial (r := r) start).visited.nonempty
-      exact Nat.succ_le_iff.mp (by simpa [run] using hvisited)
+      intro _
+      simpa [run, initial]
   | succ fuel ih =>
       intro hfront
       have hprevfront :
