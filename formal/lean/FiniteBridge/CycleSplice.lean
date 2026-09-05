@@ -18,7 +18,7 @@ theorem isChain_cycle_splice
       | nil => simpa using hchain
       | cons b middle =>
           simpa only [List.nil_append, List.cons_append] at hchain ⊢
-          exact hchain
+          exact hchain.2
   | cons p pre ih =>
       simpa only [List.cons_append] at hchain ⊢
       apply List.IsChain.cons_of_ne_nil
