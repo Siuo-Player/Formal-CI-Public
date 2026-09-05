@@ -20,13 +20,19 @@ theorem complete_boundary_no_witness
   rcases hvalid with ⟨w, hw⟩
   exact hempty ⟨w, hcover w hw, hw⟩
 
-/-- A proved-empty result is semantically justified by a complete empty boundary. -/
-theorem provedEmpty_of_complete_boundary
+/-- A result classified as proved-empty is sound when a complete empty boundary
+    has already ruled out every valid witness. -/
+def ProvedEmptySound {Witness : Type}
+    (valid : Witness → Prop) (result : SearchResult Witness) : Prop :=
+  result = SearchResult.provedEmpty → ¬ ∃ w, valid w
+
+/-- Complete coverage plus boundary emptiness makes a proved-empty result sound. -/
+theorem provedEmpty_sound_of_complete_boundary
     {Witness : Type} {boundary valid : Witness → Prop}
     (hcover : CoversAll boundary valid)
     (hempty : BoundaryEmpty boundary valid) :
-    (SearchResult.provedEmpty : SearchResult Witness) =
-      SearchResult.provedEmpty := by
-  rfl
+    ProvedEmptySound valid (SearchResult.provedEmpty : SearchResult Witness) := by
+  intro _
+  exact complete_boundary_no_witness hcover hempty
 
 end FiniteBridge
