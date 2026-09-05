@@ -16,18 +16,20 @@ section
 
 variable {n : Nat} {r : Transition n}
 
-/-- All one-step successors of a state in the finite universe. -/
-def successors (s : State n) : Finset (State n) := by
+/-- All one-step successors of a state in the finite universe.
+This semantic relation is arbitrary, so enumeration uses classical decidability and is
+therefore intentionally noncomputable until an executable transition representation is introduced. -/
+noncomputable def successors (s : State n) : Finset (State n) := by
   classical
   exact Finset.univ.filter (fun t => r s t)
 
 /-- States discovered from the current frontier but not visited before. -/
-def nextFrontier (state : SearchState n r) : Finset (State n) := by
+noncomputable def nextFrontier (state : SearchState n r) : Finset (State n) := by
   classical
-  exact state.frontier.biUnion (fun s => successors (r := r) s) \ state.visited
+  exact state.frontier.biUnion (fun s => successors (r := r) s) \\ state.visited
 
 /-- One breadth-oriented exploration step. -/
-def step (state : SearchState n r) : SearchState n r := by
+noncomputable def step (state : SearchState n r) : SearchState n r := by
   classical
   let frontier' := nextFrontier (r := r) state
   let visited' := state.visited ∪ frontier'
