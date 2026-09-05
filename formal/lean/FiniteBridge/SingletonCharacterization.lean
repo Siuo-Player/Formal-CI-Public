@@ -25,7 +25,7 @@ theorem singleton_witness_endpoints_equal
   | cons x tail =>
       cases tail with
       | nil =>
-          simpa using hhead.trans hlast.symm
+          simpa using hhead.symm.trans hlast
       | cons y ys =>
           simp at hlen
 
