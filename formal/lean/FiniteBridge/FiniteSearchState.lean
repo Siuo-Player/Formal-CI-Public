@@ -52,11 +52,11 @@ theorem step_frontier_disjoint_old_visited (state : SearchState n r) :
   classical
   unfold step nextFrontier
   simp only [Finset.disjoint_left, Finset.mem_sdiff]
-  intro a ha x hx hax
-  exact hx hax
+  intro a ha x hx
+  exact ha.2 x
 
 theorem initial_frontier_subset_visited (start : State n) :
-    (initial (r := r) start).frontier ⊆ (initial (r := r) start).visited := by
+  (initial (r := r) start).frontier ⊆ (initial (r := r) start).visited := by
   exact (initial (r := r) start).frontier_subset_visited
 
 end
