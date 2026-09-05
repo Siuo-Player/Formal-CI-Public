@@ -13,12 +13,12 @@ theorem isChain_cycle_splice
   have hleft : List.IsChain r (pre ++ [a]) := by
     apply List.IsChain.left_of_append (l₁ := pre ++ [a])
       (l₂ := middle ++ [a] ++ suffix)
-    simpa only [List.cons_append, List.singleton_append, List.append_assoc] using hchain
+    simpa [List.append_assoc] using hchain
   have hright : List.IsChain r ([a] ++ suffix) := by
     apply List.IsChain.right_of_append (l₁ := pre ++ a :: middle)
       (l₂ := [a] ++ suffix)
-    simpa only [List.cons_append, List.singleton_append, List.append_assoc] using hchain
+    simpa [List.append_assoc] using hchain
   have hoverlap := List.IsChain.append_overlap hleft hright (by simp : ([a] : List α) ≠ [])
-  simpa only [List.singleton_append, List.append_assoc] using hoverlap
+  simpa [List.append_assoc] using hoverlap
 
 end FiniteBridge
