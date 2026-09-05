@@ -54,7 +54,7 @@ theorem encodedSuccessors_eq_executableSuccessors (s : State n) :
       SearchState.executableSuccessors (r := r) s := by
   ext t
   rw [mem_encodedSuccessors_iff]
-  exact SearchState.mem_executableSuccessors_iff (r := r) s t
+  exact (SearchState.mem_executableSuccessors_iff (r := r) s t).symm
 
 /-- If the concrete expansion is applied to an abstract state, its encoded
 frontier is the same frontier that the formal runner computes. -/
