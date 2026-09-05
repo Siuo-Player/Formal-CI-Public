@@ -13,7 +13,7 @@ variable {n : Nat} {r : Transition n} {start target current : State n}
 
 /-- Every discovered state's outgoing transitions are either already discovered or
 still represented by the current frontier. This is the invariant that connects the
-visited set to one-step expansion. -/
+visited set to the current frontier. -/
 def SearchInvariant (state : SearchState n r) : Prop :=
   ∀ ⦃s t : State n⦄,
     s ∈ state.visited → r s t →
