@@ -7,19 +7,18 @@ namespace FiniteBridge
 /-- Any duplicate in a list admits an explicit decomposition into two occurrences
 of the same element, with an arbitrary middle segment between them. -/
 theorem duplicate_decomposition
-    {α : Type} {x : α} {xs : List α}
-    (hdup : List.Duplicate x xs) :
-    ∃ prefix middle suffix : List α,
-      xs = prefix ++ x :: middle ++ x :: suffix := by
+    {α : Type} {x : α} {xs : List α} (hdup : List.Duplicate x xs) :
+    ∃ pre middle suffix : List α,
+      xs = pre ++ x :: middle ++ x :: suffix := by
   induction hdup with
   | cons_mem hx ih =>
       cases ih with
-      | intro prefix middle suffix hrepr =>
+      | intro pre middle suffix hrepr =>
           exact ⟨[], [], x :: suffix, by simp [hrepr]⟩
   | cons_duplicate hdup ih y =>
       cases ih with
-      | intro prefix middle suffix hrepr =>
-          exact ⟨y :: prefix, middle, suffix, by simp [hrepr, List.cons_append]⟩
+      | intro pre middle suffix hrepr =>
+          exact ⟨y :: pre, middle, suffix, by simp [hrepr, List.cons_append]⟩
 
 /-- Removing a repeated-state cycle from a non-empty chain preserves its
 endpoints and strictly decreases its length. -/
@@ -32,27 +31,25 @@ theorem chainWitness_splice_shorter
       ChainWitness r start target ys ∧ ys.length < xs.length := by
   rcases hxs with ⟨hne, hhead, hlast, hchain⟩
   rcases (List.exists_duplicate_iff_not_nodup.mp hnodup) with ⟨a, hdup⟩
-  rcases duplicate_decomposition hdup with ⟨prefix, middle, suffix, rfl⟩
-  let ys := prefix ++ a :: suffix
+  rcases duplicate_decomposition hdup with ⟨pre, middle, suffix, rfl⟩
+  let ys := pre ++ a :: suffix
   have hchain' : List.IsChain r ys := by
     dsimp [ys]
     exact isChain_cycle_splice hchain
   have hne' : ys ≠ [] := by
     intro hy
-    have : prefix = [] := by
+    have hpre : pre = [] := by
       simpa [ys] using hy
-    subst this
+    subst hpre
     simp at hhead
   have hhead' : ys.head hne' = start := by
     simpa [ys] using hhead
   have hlast' : ys.getLast hne' = target := by
-    have hsuffix : suffix = [] ∨ suffix ≠ [] := classical exact em _
-    cases hsuffix with
-    | inl hs =>
-        subst hs
-        simpa [ys, List.getLast] using hhead
-    | inr hs =>
-        simpa [ys, List.getLast, hs] using hlast
+    classical
+    by_cases hs : suffix = []
+    · subst hs
+      simpa [ys, List.getLast] using hhead
+    · simpa [ys, List.getLast, hs] using hlast
   refine ⟨ys, ⟨hne', hhead', hlast', hchain'⟩, ?_⟩
   simp [ys]
 
@@ -68,7 +65,12 @@ theorem chainWitness_to_simpleChainWitness
       by_cases hnodup : xs.Nodup
       · exact ⟨xs, hxs, hnodup⟩
       · rcases chainWitness_splice_shorter hxs hnodup with ⟨ys, hys, hlt⟩
-        exact ih ys.length hlt ys start target hys
+        apply ih ys.length
+        · simpa [hlen] using hlt
+        · exact ys
+        · exact start
+        · exact target
+        · exact hys
 
 /-- Reachability over any relation admits a simple non-empty chain witness. -/
 theorem reflTransGen_to_simpleChainWitness
@@ -83,6 +85,8 @@ theorem reflTransGen_to_simpleChainWitness
   rcases reflTransGen_to_chainWitness h with ⟨xs, hxs⟩
   rcases chainWitness_to_simpleChainWitness hxs with ⟨ys, hys, hsimple⟩
   rcases hys with ⟨hne, hhead, hlast, hchain⟩
-  exact ⟨ys, hne, hhead, hlast, hsimple, hchain⟩
+  refine ⟨ys, hne, ?_, ?_, hsimple, hchain⟩
+  · simpa only [proof_irrelheq] using hhead
+  · simpa only [proof_irrelheq] using hlast
 
 end FiniteBridge
