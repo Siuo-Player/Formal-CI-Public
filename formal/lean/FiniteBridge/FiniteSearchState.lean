@@ -20,7 +20,7 @@ noncomputable def successors (s : State n) : Finset (State n) := by
 
 noncomputable def nextFrontier (state : SearchState n r) : Finset (State n) := by
   classical
-  exact state.frontier.biUnion (fun s => successors (r := r) s) \\ state.visited
+  exact state.frontier.biUnion (fun s => successors (r := r) s) \ state.visited
 
 noncomputable def step (state : SearchState n r) : SearchState n r := by
   classical
