@@ -73,7 +73,7 @@ theorem run_visited_mono_of_le (start : State n) {fuel fuel' : Nat}
         exact step_visited_monotone (run (r := r) fuel' (initial start))
           (ih (Nat.le_of_lt_succ hlt) hx)
       · subst fuel
-        exact step_visited_monotone (run (r := r) fuel' (initial start))
+        exact subset_rfl
 
 theorem reachWithin_of_nonempty_chain
     {xs : List (State n)}
