@@ -2,6 +2,7 @@ import Mathlib
 import FiniteBridge.Foundations
 import FiniteBridge.ResultSemantics
 import FiniteBridge.BoundedResult
+import FiniteBridge.SearchResultCertificates
 import FiniteBridge.Dependency
 import FiniteBridge.DependencyClosure
 import FiniteBridge.SemanticDependency
