@@ -4,22 +4,49 @@ import FiniteBridge.CycleSplice
 
 namespace FiniteBridge
 
-/-- Any duplicate in a list admits an explicit decomposition into two occurrences
-of the same element, with an arbitrary middle segment between them. -/
+/-- Duplicate decomposition by structural induction on the ambient list.
+This is the standard walk-to-cycle decomposition pattern used in graph
+formalizations; the project only adapts it to `List.Duplicate`. -/
 theorem duplicate_decomposition
     {α : Type} {x : α} {xs : List α}
     (hdup : List.Duplicate x xs) :
-    ∃ prefix middle suffix : List α,
-      xs = prefix ++ x :: middle ++ x :: suffix := by
-  induction hdup with
-  | cons_mem hx ih =>
-      cases ih with
-      | intro prefix middle suffix hrepr =>
-          exact ⟨[], [], x :: suffix, by simp [hrepr]⟩
-  | cons_duplicate hdup ih y =>
-      cases ih with
-      | intro prefix middle suffix hrepr =>
-          exact ⟨y :: prefix, middle, suffix, by simp [hrepr, List.cons_append]⟩
+    ∃ pre middle suffix : List α,
+      xs = pre ++ x :: middle ++ x :: suffix := by
+  induction xs with
+  | nil =>
+      cases hdup
+  | cons y ys ih =>
+      cases hdup with
+      | cons_mem hx =>
+          rcases List.mem_iff_append.mp hx with ⟨pre, suffix, hys⟩
+          exact ⟨[], pre, suffix, by
+            rw [hys]
+            simp⟩
+      | cons_duplicate hdup' =>
+          rcases ih hdup' with ⟨pre, middle, suffix, hrepr⟩
+          exact ⟨y :: pre, middle, suffix, by
+            rw [hrepr]
+            simp [List.cons_append, List.append_assoc]⟩
+
+/-- The cycle-splice operation preserves non-emptiness and the first endpoint. -/
+theorem chainWitness_splice_preserves_start
+    {α : Type} {r : α → α → Prop} {start target : α}
+    {pre middle suffix : List α} {a : α}
+    (hhead : (pre ++ a :: middle ++ a :: suffix).head (by aesop) = start) :
+    (pre ++ a :: suffix).head (by aesop) = start := by
+  cases pre with
+  | nil => simpa using hhead
+  | cons p pre => simpa using hhead
+
+/-- The cycle-splice operation preserves the final endpoint. -/
+theorem chainWitness_splice_preserves_target
+    {α : Type} {r : α → α → Prop} {start target : α}
+    {pre middle suffix : List α} {a : α}
+    (hlast : (pre ++ a :: middle ++ a :: suffix).getLast (by aesop) = target) :
+    (pre ++ a :: suffix).getLast (by aesop) = target := by
+  cases suffix with
+  | nil => simpa [List.append_assoc] using hlast
+  | cons b suffix => simpa [List.append_assoc] using hlast
 
 /-- Removing a repeated-state cycle from a non-empty chain preserves its
 endpoints and strictly decreases its length. -/
@@ -31,28 +58,23 @@ theorem chainWitness_splice_shorter
     ∃ ys : List α,
       ChainWitness r start target ys ∧ ys.length < xs.length := by
   rcases hxs with ⟨hne, hhead, hlast, hchain⟩
-  rcases (List.exists_duplicate_iff_not_nodup.mp hnodup) with ⟨a, hdup⟩
-  rcases duplicate_decomposition hdup with ⟨prefix, middle, suffix, rfl⟩
-  let ys := prefix ++ a :: suffix
+  rcases (List.exists_duplicate_iff_not_nodup.mpr hnodup) with ⟨a, hdup⟩
+  rcases duplicate_decomposition hdup with ⟨pre, middle, suffix, rfl⟩
+  let ys := pre ++ a :: suffix
   have hchain' : List.IsChain r ys := by
     dsimp [ys]
     exact isChain_cycle_splice hchain
   have hne' : ys ≠ [] := by
-    intro hy
-    have : prefix = [] := by
-      simpa [ys] using hy
-    subst this
-    simp at hhead
+    unfold ys
+    cases pre <;> simp
   have hhead' : ys.head hne' = start := by
-    simpa [ys] using hhead
+    dsimp [ys]
+    cases pre <;> simpa using hhead
   have hlast' : ys.getLast hne' = target := by
-    have hsuffix : suffix = [] ∨ suffix ≠ [] := classical exact em _
-    cases hsuffix with
-    | inl hs =>
-        subst hs
-        simpa [ys, List.getLast] using hhead
-    | inr hs =>
-        simpa [ys, List.getLast, hs] using hlast
+    dsimp [ys]
+    cases suffix with
+    | nil => simpa [List.append_assoc] using hlast
+    | cons b suffix => simpa [List.append_assoc] using hlast
   refine ⟨ys, ⟨hne', hhead', hlast', hchain'⟩, ?_⟩
   simp [ys]
 
@@ -68,16 +90,17 @@ theorem chainWitness_to_simpleChainWitness
       by_cases hnodup : xs.Nodup
       · exact ⟨xs, hxs, hnodup⟩
       · rcases chainWitness_splice_shorter hxs hnodup with ⟨ys, hys, hlt⟩
-        exact ih ys.length hlt ys start target hys
+        have hlt' : ys.length < n := by
+          simpa [hlen] using hlt
+        exact ih ys.length hlt' hys rfl
 
 /-- Reachability over any relation admits a simple non-empty chain witness. -/
 theorem reflTransGen_to_simpleChainWitness
     {α : Type} {r : α → α → Prop} {start target : α}
     (h : Relation.ReflTransGen r start target) :
-    ∃ xs : List α,
-      xs ≠ [] ∧
-      xs.head (by aesop) = start ∧
-      xs.getLast (by aesop) = target ∧
+    ∃ xs : List α, ∃ hne : xs ≠ [],
+      xs.head hne = start ∧
+      xs.getLast hne = target ∧
       xs.Nodup ∧
       List.IsChain r xs := by
   rcases reflTransGen_to_chainWitness h with ⟨xs, hxs⟩

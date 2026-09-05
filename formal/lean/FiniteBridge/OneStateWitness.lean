@@ -9,6 +9,9 @@ theorem one_state_boundedWitness_length_eq_one
     (hw : BoundedWitness r start target xs) :
     xs.length = 1 := by
   rcases hw with ⟨hne, hhead, hlast, hsimple, hvalid, hbound⟩
+  have hpos : 0 < xs.length := List.length_pos_of_ne_nil hne
+  have hle : xs.length ≤ 1 := by
+    simpa using simplePath_length_le_state_count hsimple
   omega
 
 end FiniteBridge

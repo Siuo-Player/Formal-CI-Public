@@ -11,6 +11,14 @@ import FiniteBridge.SemanticExactness
 import FiniteBridge.ChainReachability
 import FiniteBridge.MultiSeedExactness
 import FiniteBridge.ReachabilityWitness
+import FiniteBridge.BoundedReachabilityFuel
+import FiniteBridge.FiniteSearchState
+import FiniteBridge.SearchCoverage
+import FiniteBridge.SearchReachability
+import FiniteBridge.SearchExhaustion
+import FiniteBridge.TargetSearchResult
+import FiniteBridge.ExecutableSearchBridge
+import FiniteBridge.ExecutableTargetSearchResult
 import FiniteBridge.ZeroLengthBridge
 
 namespace FiniteBridge

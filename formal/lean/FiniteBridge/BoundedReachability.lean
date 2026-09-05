@@ -2,13 +2,14 @@ import Mathlib
 import FiniteBridge.Foundations
 import FiniteBridge.ReachabilityWitness
 import FiniteBridge.SimpleWitness
+import FiniteBridge.TransitionValidChain
 
 namespace FiniteBridge
 
 /-- A directed list chain is exactly transition-valid for the recursive witness predicate. -/
 theorem transitionValid_of_isChain
     {n : Nat} {r : Transition n} {xs : List (State n)}
-    (hchain : List.IsChain r xs) :
+    (hchain : List.IsChain (fun a b => r a b) xs) :
     TransitionValid r xs := by
   induction xs with
   | nil => simp [TransitionValid]
@@ -16,8 +17,7 @@ theorem transitionValid_of_isChain
       cases xs with
       | nil => simp [TransitionValid]
       | cons y ys =>
-          simp only [TransitionValid]
-          exact ⟨hchain.head, ih hchain.tail⟩
+          exact ⟨hchain.rel, ih hchain.tail⟩
 
 /-- Every reachable pair of finite states has an endpoint-preserving bounded witness. -/
 theorem boundedWitness_of_reflTransGen
