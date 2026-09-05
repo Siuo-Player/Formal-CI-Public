@@ -12,6 +12,6 @@ theorem no_reflTransGen_of_zero_count
     {r : Transition 0} {start : State 0} :
     Relation.ReflTransGen r start start → False := by
   intro _
-  exact no_state_of_zero_count
+  exact no_state_of_zero_count (x := start)
 
 end FiniteBridge
