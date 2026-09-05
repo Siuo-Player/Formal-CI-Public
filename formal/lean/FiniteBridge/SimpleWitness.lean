@@ -92,7 +92,7 @@ theorem chainWitness_to_simpleChainWitness
       · rcases chainWitness_splice_shorter hxs hnodup with ⟨ys, hys, hlt⟩
         have hlt' : ys.length < n := by
           simpa [hlen] using hlt
-        exact ih ys.length hlt' hys
+        exact ih ys.length hlt' hys rfl
 
 /-- Reachability over any relation admits a simple non-empty chain witness. -/
 theorem reflTransGen_to_simpleChainWitness
