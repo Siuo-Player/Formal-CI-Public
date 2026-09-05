@@ -1,3 +1,4 @@
+import Mathlib
 import FiniteBridge.ResultSemantics
 
 namespace FiniteBridge
@@ -21,7 +22,7 @@ def BoundaryHasNoValid {Witness : Type} (valid : Witness → Prop)
     (boundary : Finset Witness) : Prop :=
   ∀ w, w ∈ boundary → ¬ valid w
 
-/-- A found result is sound exactly when its reported witness satisfies the validity predicate. -/
+/-- A found result is sound when its reported witness satisfies the validity predicate. -/
 theorem found_searchResultSound
     {Witness : Type} {valid : Witness → Prop} {witness : Witness} :
     valid witness →
