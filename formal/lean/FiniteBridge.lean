@@ -17,6 +17,7 @@ import FiniteBridge.SearchCoverage
 import FiniteBridge.SearchReachability
 import FiniteBridge.SearchExhaustion
 import FiniteBridge.TargetSearchResult
+import FiniteBridge.ExecutableSearchBridge
 import FiniteBridge.ZeroLengthBridge
 
 namespace FiniteBridge
