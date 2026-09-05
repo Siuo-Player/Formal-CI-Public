@@ -17,7 +17,7 @@ theorem reachable_edge_count_lt_state_count
   · subst n
     exact False.elim (Fin.elim0 start)
   · have hpos : 0 < n := Nat.pos_of_ne_zero hn
-    have hlt : n - 1 < n := Nat.sub_lt hpos hpos
+    have hlt : n - 1 < n := Nat.sub_lt hpos Nat.zero_lt_one
     exact ⟨xs, ⟨hne, hhead, hlast, hsimple, hvalid, hbound⟩, lt_of_le_of_lt hbound hlt⟩
 
 end FiniteBridge
