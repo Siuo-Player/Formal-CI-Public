@@ -42,6 +42,52 @@ theorem executableNextFrontier_eq_semantic (state : SearchState n r) :
       funext s
       exact executableSuccessors_eq_semantic (r := r) s]
 
+/-- Executable one-step search, reusing the common `SearchState` representation. -/
+def executableStep (state : SearchState n r) : SearchState n r := by
+  let frontier' := executableNextFrontier (r := r) state
+  let visited' := state.visited ∪ frontier'
+  have hsubset : frontier' ⊆ visited' := by
+    intro x hx
+    exact Finset.mem_union_right _ hx
+  exact ⟨frontier', visited', hsubset⟩
+
+/-- The executable step has the same frontier as the semantic step. -/
+theorem executableStep_frontier_eq_semantic (state : SearchState n r) :
+    (executableStep (r := r) state).frontier =
+      (step (r := r) state).frontier := by
+  simp [executableStep, executableNextFrontier_eq_semantic]
+
+/-- The executable step has the same visited set as the semantic step. -/
+theorem executableStep_visited_eq_semantic (state : SearchState n r) :
+    (executableStep (r := r) state).visited =
+      (step (r := r) state).visited := by
+  simp [executableStep, executableNextFrontier_eq_semantic]
+
+/-- The executable step is extensionally identical to the semantic step. -/
+theorem executableStep_eq_semantic (state : SearchState n r) :
+    executableStep (r := r) state = step (r := r) state := by
+  cases state with
+  | mk frontier visited hsubset =>
+      simp [executableStep, executableNextFrontier_eq_semantic, step]
+
+/-- Executable bounded search runner based on the decidable successor enumeration. -/
+def executableRun : Nat → SearchState n r → SearchState n r
+  | 0, state => state
+  | fuel + 1, state => executableStep (r := r) (executableRun fuel state)
+
+/-- Every executable run is extensionally the corresponding semantic run. -/
+theorem executableRun_eq_semantic :
+    ∀ fuel (state : SearchState n r),
+      executableRun (r := r) fuel state = run (r := r) fuel state := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro state
+      rfl
+  | succ fuel ih =>
+      intro state
+      simp [executableRun, run, executableStep_eq_semantic, ih]
+
 end
 end SearchState
 end FiniteBridge
