@@ -56,33 +56,27 @@ def s01ConcreteTransition : Transition 4 :=
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
-  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
-  infer_instance
+  simp [v01TransitionG7]
 
 instance e01Decidable : DecidableRel e01BaseTransition := by
   intro a b
-  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 2))
-  infer_instance
+  simp [e01BaseTransition]
 
 instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
   intro a b
-  change Decidable False
-  exact isFalse id
+  simp [e01AdmissibleTransition]
 
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
-  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 3) ∨ (a = 0 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
-  infer_instance
+  simp [d01CorrespondenceTransitionV1]
 
 instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
   intro a b
-  change Decidable ((a = 0 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
-  infer_instance
+  simp [d01CorrespondenceTransitionV2]
 
 instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
-  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 2 ∧ b = 3))
-  infer_instance
+  simp [s01ConcreteTransition]
 
 /-!
 Canonical fixture correspondence:
@@ -125,26 +119,6 @@ example : oracleReachable v01TransitionG7 2 v01Start v01Target = false := by
 The two classifiers are separate computations; the equality below is a fixture
 level correspondence statement, not a theorem about arbitrary engines.
 -/
-
-instance {α : Type} [DecidableEq α] : DecidableEq (SearchResult α) := by
-  intro x y
-  cases x with
-  | found wx =>
-      cases y with
-      | found wy =>
-          exact if h : wx = wy then isTrue (by cases h; rfl) else isFalse (by intro hxy; cases hxy; exact h rfl)
-      | provedEmpty => exact isFalse (by intro hxy; cases hxy)
-      | unknown => exact isFalse (by intro hxy; cases hxy)
-  | provedEmpty =>
-      cases y with
-      | found wy => exact isFalse (by intro hxy; cases hxy)
-      | provedEmpty => exact isTrue rfl
-      | unknown => exact isFalse (by intro hxy; cases hxy)
-  | unknown =>
-      cases y with
-      | found wy => exact isFalse (by intro hxy; cases hxy)
-      | provedEmpty => exact isFalse (by intro hxy; cases hxy)
-      | unknown => exact isTrue rfl
 
 example :
     SearchState.executableTargetSearchResult
