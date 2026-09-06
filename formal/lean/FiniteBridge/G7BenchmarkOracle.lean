@@ -56,32 +56,33 @@ def s01ConcreteTransition : Transition 4 :=
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
-  simp only [v01TransitionG7]
-  exact Classical.decEq _
+  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
+  infer_instance
 
 instance e01Decidable : DecidableRel e01BaseTransition := by
   intro a b
-  simp only [e01BaseTransition]
-  exact Classical.decEq _
+  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 2))
+  infer_instance
 
 instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
   intro a b
-  exact isFalse (by simp [e01AdmissibleTransition])
+  change Decidable False
+  exact isFalse id
 
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
-  simp only [d01CorrespondenceTransitionV1]
-  exact Classical.decEq _
+  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 1 ∧ b = 3) ∨ (a = 0 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
+  infer_instance
 
 instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
   intro a b
-  simp only [d01CorrespondenceTransitionV2]
-  exact Classical.decEq _
+  change Decidable ((a = 0 ∧ b = 2) ∨ (a = 2 ∧ b = 3))
+  infer_instance
 
 instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
-  simp only [s01ConcreteTransition]
-  exact Classical.decEq _
+  change Decidable ((a = 0 ∧ b = 1) ∨ (a = 2 ∧ b = 3))
+  infer_instance
 
 /-!
 Canonical fixture correspondence:
