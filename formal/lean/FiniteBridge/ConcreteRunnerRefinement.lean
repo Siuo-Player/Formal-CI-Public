@@ -21,7 +21,7 @@ def concreteInitial (start : ConcreteState) : ConcreteSearchState ConcreteState 
 def concreteNextFrontier
     (adapter : ConcreteSearchAdapter ConcreteState n r)
     (state : ConcreteSearchState ConcreteState) : Finset ConcreteState :=
-  state.frontier.biUnion adapter.successors \\ state.visited
+  state.frontier.biUnion adapter.successors \ state.visited
 
 def concreteStep
     (adapter : ConcreteSearchAdapter ConcreteState n r)
@@ -146,7 +146,7 @@ theorem encoded_concreteStep_eq_executableStep
               _ = rvisited := hright_visited
           subst rfront
           subst rvisited
-          have hproof : lsub = rsub := Subsingleton.elim _ _
+          have hproof : HEq lsub rsub := proof_irrel_heq lsub rsub
           cases hproof
           rfl
 
