@@ -117,10 +117,33 @@ theorem encoded_concreteStep_eq_executableStep
   | mk lfront lvisited lsub =>
       cases hright : SearchState.executableStep (r := r) (encodedSearchState adapter state) with
       | mk rfront rvisited rsub =>
+          have hleft_front :
+              (encodedSearchState adapter (concreteStep adapter state)).frontier = lfront := by
+            simpa [hleft]
+          have hright_front :
+              (SearchState.executableStep (r := r) (encodedSearchState adapter state)).frontier = rfront := by
+            simpa [hright]
+          have hleft_visited :
+              (encodedSearchState adapter (concreteStep adapter state)).visited = lvisited := by
+            simpa [hleft]
+          have hright_visited :
+              (SearchState.executableStep (r := r) (encodedSearchState adapter state)).visited = rvisited := by
+            simpa [hright]
           have hf : lfront = rfront := by
-            simpa [hleft, hright] using hfront
+            calc
+              lfront = (encodedSearchState adapter (concreteStep adapter state)).frontier := hleft_front.symm
+              _ = SearchState.executableNextFrontier (r := r)
+                  (encodedSearchState adapter state) := hfront
+              _ = (SearchState.executableStep (r := r)
+                  (encodedSearchState adapter state)).frontier := by
+                    simpa [SearchState.executableStep]
+              _ = rfront := hright_front
           have hv : lvisited = rvisited := by
-            simpa [hleft, hright] using hvisited
+            calc
+              lvisited = (encodedSearchState adapter (concreteStep adapter state)).visited := hleft_visited.symm
+              _ = (SearchState.executableStep (r := r)
+                  (encodedSearchState adapter state)).visited := hvisited
+              _ = rvisited := hright_visited
           subst rfront
           subst rvisited
           rfl
