@@ -56,27 +56,32 @@ def s01ConcreteTransition : Transition 4 :=
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
-  simp [v01TransitionG7]
+  simp only [v01TransitionG7]
+  exact Classical.decEq _
 
 instance e01Decidable : DecidableRel e01BaseTransition := by
   intro a b
-  simp [e01BaseTransition]
+  simp only [e01BaseTransition]
+  exact Classical.decEq _
 
 instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
   intro a b
-  simp [e01AdmissibleTransition]
+  exact isFalse (by simp [e01AdmissibleTransition])
 
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
-  simp [d01CorrespondenceTransitionV1]
+  simp only [d01CorrespondenceTransitionV1]
+  exact Classical.decEq _
 
 instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
   intro a b
-  simp [d01CorrespondenceTransitionV2]
+  simp only [d01CorrespondenceTransitionV2]
+  exact Classical.decEq _
 
 instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
-  simp [s01ConcreteTransition]
+  simp only [s01ConcreteTransition]
+  exact Classical.decEq _
 
 /-!
 Canonical fixture correspondence:
