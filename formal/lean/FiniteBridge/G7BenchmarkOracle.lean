@@ -4,11 +4,11 @@ import FiniteBridge.ExecutableTargetSearchResult
 
 namespace FiniteBridge
 
-/-! 
+/-!
 G7 benchmark/oracle correspondence for the first machine-readable fixtures.
 
-The oracle below is deliberately a separate bounded path enumerator.  It does
-not inspect `executableRun` or reuse the frontier implementation.  This gives
+The oracle below is deliberately a separate bounded path enumerator. It does
+not inspect `executableRun` or reuse the frontier implementation. This gives
 us an independently structured executable classifier for tiny benchmark
 instances before any claim is made about engine correspondence.
 -/
@@ -21,17 +21,6 @@ def oracleReachable (r : Transition n) [DecidableRel r]
         true
       else
         decide (∃ mid : State n, r start mid ∧ oracleReachable r fuel mid target = true)
-
-/-- Computational forbidden-state wrapper for the concrete fixtures. -/
-def forbiddenTransition (r : Transition n) (forbidden : Finset (State n))
-    [DecidableRel r] : Transition n :=
-  fun a b => a ∉ forbidden ∧ b ∉ forbidden ∧ r a b
-
-instance forbiddenTransitionDecidable
-    (r : Transition n) (forbidden : Finset (State n)) [DecidableRel r] :
-    DecidableRel (forbiddenTransition r forbidden) := by
-  intro a b
-  simp [forbiddenTransition]
 
 /- The fixture relations are written as decidable propositions rather than
    matching on `Fin.val`, so Lean can synthesize executable decisions. -/
@@ -46,6 +35,8 @@ def e01BaseTransition : Transition 3 :=
     (a = 0 ∧ b = 1) ∨
     (a = 1 ∧ b = 2)
 
+def e01AdmissibleTransition : Transition 3 := fun _ _ => False
+
 def d01CorrespondenceTransitionV1 : Transition 4 :=
   fun a b =>
     (a = 0 ∧ b = 1) ∨
@@ -54,7 +45,14 @@ def d01CorrespondenceTransitionV1 : Transition 4 :=
     (a = 2 ∧ b = 3)
 
 def d01CorrespondenceTransitionV2 : Transition 4 :=
-  forbiddenTransition d01CorrespondenceTransitionV1 ({1} : Finset (State 4))
+  fun a b =>
+    (a = 0 ∧ b = 2) ∨
+    (a = 2 ∧ b = 3)
+
+def s01ConcreteTransition : Transition 4 :=
+  fun a b =>
+    (a = 0 ∧ b = 1) ∨
+    (a = 2 ∧ b = 3)
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
@@ -64,7 +62,19 @@ instance e01Decidable : DecidableRel e01BaseTransition := by
   intro a b
   infer_instance
 
+instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
+  intro a b
+  exact isFalse (by simp [e01AdmissibleTransition])
+
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
+  intro a b
+  infer_instance
+
+instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
+  intro a b
+  infer_instance
+
+instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
   infer_instance
 
@@ -72,25 +82,23 @@ instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
 Canonical fixture correspondence:
 
 * V01 maps START/FOREST/BRIDGE/TOWER to 0/1/2/3.
-* E01 maps START/FOREST/TOWER to 0/1/2.
-* D01 maps START/NORTH/SOUTH/TOWER to 0/1/2/3.
-
-The forbidden-state condition for E01 is represented by a separate admissible
-transition relation; the D01 delta is represented by the same construction
-with NORTH forbidden in v2.
+* E01 maps START/FOREST/TOWER to 0/1/2. Its admissible relation is empty
+  because the only two edges both touch the forbidden FOREST state.
+* D01 maps START/NORTH/SOUTH/TOWER to 0/1/2/3. Version 2 removes NORTH and
+  therefore retains only START -> SOUTH -> TOWER.
 -/
 
 def v01Start : State 4 := 0
 def v01Target : State 4 := 3
-
-def e01AdmissibleTransition : Transition 3 :=
-  forbiddenTransition e01BaseTransition ({1} : Finset (State 3))
 
 def e01Start : State 3 := 0
 def e01Target : State 3 := 2
 
 def d01Start : State 4 := 0
 def d01Target : State 4 := 3
+
+def s01Start : State 4 := 0
+def s01Target : State 4 := 3
 
 example : oracleReachable v01TransitionG7 3 v01Start v01Target = true := by
   native_decide
@@ -157,22 +165,10 @@ example :
   native_decide
 
 /-!
-S01 is intentionally not represented as a positive correspondence.  Its
+S01 is intentionally not represented as a positive correspondence. Its
 abstract path exists while no concrete A-to-D path exists, so an abstraction
 result must not be promoted to concrete realizability.
 -/
-
-def s01ConcreteTransition : Transition 4 :=
-  fun a b =>
-    (a = 0 ∧ b = 1) ∨
-    (a = 2 ∧ b = 3)
-
-def s01Start : State 4 := 0
-def s01Target : State 4 := 3
-
-instance s01Decidable : DecidableRel s01ConcreteTransition := by
-  intro a b
-  infer_instance
 
 example : oracleReachable s01ConcreteTransition 3 s01Start s01Target = false := by
   native_decide
