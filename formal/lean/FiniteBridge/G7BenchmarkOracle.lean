@@ -24,8 +24,14 @@ def oracleReachable (r : Transition n) [DecidableRel r]
 
 /-- Computational forbidden-state wrapper for the concrete fixtures. -/
 def forbiddenTransition (r : Transition n) (forbidden : Finset (State n))
-    : Transition n :=
+    [DecidableRel r] : Transition n :=
   fun a b => a ∉ forbidden ∧ b ∉ forbidden ∧ r a b
+
+instance forbiddenTransitionDecidable
+    (r : Transition n) (forbidden : Finset (State n)) [DecidableRel r] :
+    DecidableRel (forbiddenTransition r forbidden) := by
+  intro a b
+  simp [forbiddenTransition]
 
 /- The fixture relations are written as decidable propositions rather than
    matching on `Fin.val`, so Lean can synthesize executable decisions. -/
@@ -62,10 +68,6 @@ instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
   infer_instance
 
-instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
-  intro a b
-  infer_instance
-
 /-!
 Canonical fixture correspondence:
 
@@ -89,10 +91,6 @@ def e01Target : State 3 := 2
 
 def d01Start : State 4 := 0
 def d01Target : State 4 := 3
-
-instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
-  intro a b
-  infer_instance
 
 example : oracleReachable v01TransitionG7 3 v01Start v01Target = true := by
   native_decide
@@ -120,18 +118,18 @@ instance {α : Type} [DecidableEq α] : DecidableEq (SearchResult α) := by
   | found wx =>
       cases y with
       | found wy =>
-          exact if h : wx = wy then isTrue (by cases h; rfl) else isFalse (by intro h; cases h; exact h rfl)
-      | provedEmpty => exact isFalse (by intro h; cases h)
-      | unknown => exact isFalse (by intro h; cases h)
+          exact if h : wx = wy then isTrue (by cases h; rfl) else isFalse (by intro hxy; cases hxy; exact h rfl)
+      | provedEmpty => exact isFalse (by intro hxy; cases hxy)
+      | unknown => exact isFalse (by intro hxy; cases hxy)
   | provedEmpty =>
       cases y with
-      | found wy => exact isFalse (by intro h; cases h)
+      | found wy => exact isFalse (by intro hxy; cases hxy)
       | provedEmpty => exact isTrue rfl
-      | unknown => exact isFalse (by intro h; cases h)
+      | unknown => exact isFalse (by intro hxy; cases hxy)
   | unknown =>
       cases y with
-      | found wy => exact isFalse (by intro h; cases h)
-      | provedEmpty => exact isFalse (by intro h; cases h)
+      | found wy => exact isFalse (by intro hxy; cases hxy)
+      | provedEmpty => exact isFalse (by intro hxy; cases hxy)
       | unknown => exact isTrue rfl
 
 example :
