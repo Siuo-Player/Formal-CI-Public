@@ -56,7 +56,7 @@ state for the encoded start. -/
 theorem encoded_concreteInitial_eq_initial (start : ConcreteState) :
     encodedSearchState adapter (concreteInitial start) =
       SearchState.initial (r := r) (adapter.encode start) := by
-  ext x <;> simp [encodedSearchState, concreteInitial, SearchState.initial]
+  simp [encodedSearchState, concreteInitial, SearchState.initial]
 
 /-- Encoding the frontier produced by one concrete step agrees with the
 abstract executable expansion. -/
@@ -65,57 +65,54 @@ theorem encoded_concreteNextFrontier_eq_executable
     (encodedSearchState adapter (concreteStep adapter state)).frontier =
       SearchState.executableNextFrontier (r := r)
         (encodedSearchState adapter state) := by
-  unfold encodedSearchState concreteStep concreteNextFrontier
   ext t
   constructor
   · intro ht
-    rcases Finset.mem_image.mp ht with ⟨u, hu, _⟩
-    rcases Finset.mem_sdiff.mp hu with ⟨hbi, hnew⟩
+    rcases Finset.mem_image.mp ht with ⟨u, hu, hut⟩
+    rcases Finset.mem_sdiff.mp hu with ⟨hbi, hnotvis⟩
     rcases Finset.mem_biUnion.mp hbi with ⟨s, hs, hsu⟩
     rcases Finset.mem_image.mp hs with ⟨cs, hcs, hcsenc⟩
     rcases Finset.mem_biUnion.mp hsu with ⟨ct, hct, hctenc⟩
-    have hsenc : s = adapter.encode cs := by
-      simpa using hcsenc
-    have htenc : u = adapter.encode ct := by
-      simpa using hctenc
-    have hst : r (adapter.encode cs) (adapter.encode ct) := by
-      rw [← adapter.mem_successors_iff]
-      simpa [hsenc, htenc] using hct.1
+    have hs_eq : s = adapter.encode cs := hcsenc.symm
+    have hu_eq : u = adapter.encode ct := hut.symm
+    subst s
+    subst u
+    have hrel : r (adapter.encode cs) (adapter.encode ct) :=
+      (adapter.mem_successors_iff cs ct).mp hct
     have hfront : adapter.encode cs ∈
         (encodedSearchState adapter state).frontier := by
       exact Finset.mem_image.mpr ⟨cs, hcs, rfl⟩
-    have htarget : adapter.encode ct ∉
+    have hnotencoded : adapter.encode ct ∉
         (encodedSearchState adapter state).visited := by
-      intro hvisited
-      rcases Finset.mem_image.mp hvisited with ⟨v, hv, hvenc⟩
-      have hvc : adapter.encode ct = adapter.encode v := by
-        calc
-          adapter.encode ct = u := htenc.symm
-          _ = v := by
-            simpa [hvenc] using hnew
-      have : ct = v := adapter.encode.injective hvc
-      exact hct.2 (by simpa [this])
+      intro hv
+      rcases Finset.mem_image.mp hv with ⟨v, hv', hvenc⟩
+      have hev : adapter.encode ct = adapter.encode v := by
+        exact hvenc.symm
+      have hctv : ct = v := adapter.encode.injective hev
+      exact hnotvis (by simpa [hctv])
     exact Finset.mem_sdiff.mpr ⟨
-      Finset.mem_biUnion.mpr ⟨adapter.encode cs, hfront, by simpa [hsenc, htenc] using hst⟩,
-      htarget⟩
+      Finset.mem_biUnion.mpr ⟨adapter.encode cs, hfront,
+        (SearchState.mem_executableSuccessors_iff (r := r)
+          (adapter.encode cs) (adapter.encode ct)).mpr hrel⟩,
+      hnotencoded⟩
   · intro ht
-    rcases Finset.mem_sdiff.mp ht with ⟨hnext, hnotvisited⟩
-    rcases Finset.mem_biUnion.mp hnext with ⟨s, hs, hst⟩
+    rcases Finset.mem_sdiff.mp ht with ⟨hbi, hnotvis⟩
+    rcases Finset.mem_biUnion.mp hbi with ⟨s, hs, hst⟩
     rcases Finset.mem_image.mp hs with ⟨cs, hcs, hcsenc⟩
-    have hcsenc' : s = adapter.encode cs := by
-      simpa using hcsenc
-    have hrt : r (adapter.encode cs) t := by
-      simpa [hcsenc'] using (SearchState.mem_executableSuccessors_iff (r := r) s t).mp hst
+    have hrel : r s t :=
+      (SearchState.mem_executableSuccessors_iff (r := r) s t).mp hst
     have hct : adapter.encode.symm t ∈ adapter.successors cs := by
       rw [adapter.mem_successors_iff]
-      simpa using hrt
+      simpa [hcsenc] using hrel
     have hnotconcrete : adapter.encode.symm t ∉ state.visited := by
       intro hv
-      apply hnotvisited
+      apply hnotvis
       exact Finset.mem_image.mpr ⟨adapter.encode.symm t, hv, by simp⟩
-    exact Finset.mem_image.mpr ⟨adapter.encode.symm t,
-      Finset.mem_sdiff.mpr ⟨Finset.mem_biUnion.mpr ⟨cs, hcs,
-        by exact Finset.mem_image.mpr ⟨adapter.encode.symm t, hct, by simp⟩⟩,
+    exact Finset.mem_image.mpr ⟨
+      adapter.encode.symm t,
+      Finset.mem_sdiff.mpr ⟨
+        Finset.mem_biUnion.mpr ⟨cs, hcs,
+          Finset.mem_image.mpr ⟨adapter.encode.symm t, hct, by simp⟩⟩,
         hnotconcrete⟩,
       by simp⟩
 
@@ -125,21 +122,22 @@ theorem encoded_concreteStep_eq_executableStep
     (state : ConcreteSearchState ConcreteState) :
     encodedSearchState adapter (concreteStep adapter state) =
       SearchState.executableStep (r := r) (encodedSearchState adapter state) := by
-  let a := encodedSearchState adapter (concreteStep adapter state)
-  let b := SearchState.executableStep (r := r) (encodedSearchState adapter state)
-  have hfront : a.frontier = b.frontier := by
-    exact encoded_concreteNextFrontier_eq_executable adapter state
-  have hvisited : a.visited = b.visited := by
-    dsimp [a, b, encodedSearchState, concreteStep]
-    rw [encoded_concreteNextFrontier_eq_executable adapter state]
-  cases a with
-  | mk afrontier avisited asubset =>
-      cases b with
-      | mk bfrontier bvisited bsubset =>
-          dsimp at hfront hvisited
-          cases hfront
-          cases hvisited
-          rfl
+  have hfront := encoded_concreteNextFrontier_eq_executable adapter state
+  have hvisited :
+      (encodedSearchState adapter (concreteStep adapter state)).visited =
+        (SearchState.executableStep (r := r) (encodedSearchState adapter state)).visited := by
+    change (encodedSearchState adapter (concreteStep adapter state)).visited =
+      (encodedSearchState adapter state).visited ∪
+        SearchState.executableNextFrontier (r := r)
+          (encodedSearchState adapter state)
+    change (encodedSearchState adapter state).visited ∪
+        (encodedSearchState adapter (concreteStep adapter state)).frontier = _
+    rw [hfront]
+  cases hleft : encodedSearchState adapter (concreteStep adapter state) with
+  | mk lfront lvisited lsub =>
+      cases hright : SearchState.executableStep (r := r) (encodedSearchState adapter state) with
+      | mk rfront rvisited rsub =>
+          simp_all
 
 /-- Concrete bounded runner. -/
 def concreteRun
@@ -162,7 +160,9 @@ theorem encoded_concreteRun_eq_executableRun :
       rfl
   | succ fuel ih =>
       intro state
-      simp [concreteRun, encoded_concreteStep_eq_executableStep, ih]
+      rw [concreteRun, encoded_concreteStep_eq_executableStep]
+      simpa [SearchState.executableRun] using congrArg
+        (SearchState.executableStep (r := r)) (ih state)
 
 end
 
