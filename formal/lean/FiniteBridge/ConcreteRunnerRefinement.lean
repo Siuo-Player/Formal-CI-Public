@@ -71,7 +71,8 @@ theorem encoded_concreteNextFrontier_eq_executable
       intro hv
       rcases Finset.mem_image.mp hv with ⟨v, hv', hvenc⟩
       have hcu : u = v := adapter.encode.injective hvenc.symm
-      exact hnotvis (by simpa [hcu])
+      apply hnotvis
+      simpa [hcu] using hv'
     subst t
     exact Finset.mem_sdiff.mpr ⟨
       Finset.mem_biUnion.mpr ⟨adapter.encode cs, hfront,
@@ -144,11 +145,9 @@ theorem encoded_concreteStep_eq_executableStep
               _ = (SearchState.executableStep (r := r)
                   (encodedSearchState adapter state)).visited := hvisited
               _ = rvisited := hright_visited
-          subst rfront
-          subst rvisited
-          have hproof : HEq lsub rsub := proof_irrel_heq lsub rsub
-          cases hproof
-          rfl
+          cases hf
+          cases hv
+          congr
 
 def concreteRun
     (adapter : ConcreteSearchAdapter ConcreteState n r) :
