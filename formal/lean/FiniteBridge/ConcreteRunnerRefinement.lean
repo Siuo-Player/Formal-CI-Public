@@ -106,17 +106,9 @@ theorem encoded_concreteStep_eq_executableStep
   have hvisited :
       (encodedSearchState adapter (concreteStep adapter state)).visited =
         (SearchState.executableStep (r := r) (encodedSearchState adapter state)).visited := by
-    change state.visited.image adapter.encode ∪
-        (concreteNextFrontier adapter state).image adapter.encode =
-      (encodedSearchState adapter state).visited ∪
-        SearchState.executableNextFrontier (r := r)
-          (encodedSearchState adapter state)
-    rw [← hfront]
-    rfl
-  have hstate_front :
-      (encodedSearchState adapter (concreteStep adapter state)).frontier =
-        (SearchState.executableStep (r := r) (encodedSearchState adapter state)).frontier := by
-    exact hfront
+    simp [encodedSearchState, concreteStep, SearchState.executableStep,
+      hfront]
+  have hstate_front := hfront
   cases hleft : encodedSearchState adapter (concreteStep adapter state) with
   | mk lfront lvisited lsub =>
       cases hright : SearchState.executableStep (r := r) (encodedSearchState adapter state) with
