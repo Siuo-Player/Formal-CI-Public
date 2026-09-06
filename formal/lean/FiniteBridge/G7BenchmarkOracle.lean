@@ -22,37 +22,37 @@ def oracleReachable (r : Transition n) [DecidableRel r]
       else
         decide (∃ mid : State n, r start mid ∧ oracleReachable r fuel mid target = true)
 
-/- The fixture relations are written as decidable propositions rather than
-   matching on `Fin.val`, so Lean can synthesize executable decisions. -/
+/- The fixture relations use natural-number discriminators. This makes their
+   decision procedures directly reducible and avoids classical computation. -/
 def v01TransitionG7 : Transition 4 :=
   fun a b =>
-    (a = 0 ∧ b = 1) ∨
-    (a = 1 ∧ b = 2) ∨
-    (a = 2 ∧ b = 3)
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 2) ∨
+    (a.val = 2 ∧ b.val = 3)
 
 def e01BaseTransition : Transition 3 :=
   fun a b =>
-    (a = 0 ∧ b = 1) ∨
-    (a = 1 ∧ b = 2)
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 2)
 
 def e01AdmissibleTransition : Transition 3 := fun _ _ => False
 
 def d01CorrespondenceTransitionV1 : Transition 4 :=
   fun a b =>
-    (a = 0 ∧ b = 1) ∨
-    (a = 1 ∧ b = 3) ∨
-    (a = 0 ∧ b = 2) ∨
-    (a = 2 ∧ b = 3)
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 3) ∨
+    (a.val = 0 ∧ b.val = 2) ∨
+    (a.val = 2 ∧ b.val = 3)
 
 def d01CorrespondenceTransitionV2 : Transition 4 :=
   fun a b =>
-    (a = 0 ∧ b = 2) ∨
-    (a = 2 ∧ b = 3)
+    (a.val = 0 ∧ b.val = 2) ∨
+    (a.val = 2 ∧ b.val = 3)
 
 def s01ConcreteTransition : Transition 4 :=
   fun a b =>
-    (a = 0 ∧ b = 1) ∨
-    (a = 2 ∧ b = 3)
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 2 ∧ b.val = 3)
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
