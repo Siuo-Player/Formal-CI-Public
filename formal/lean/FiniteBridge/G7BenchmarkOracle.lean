@@ -56,27 +56,27 @@ def s01ConcreteTransition : Transition 4 :=
 
 instance v01Decidable : DecidableRel v01TransitionG7 := by
   intro a b
-  infer_instance
+  simp [v01TransitionG7]
 
 instance e01Decidable : DecidableRel e01BaseTransition := by
   intro a b
-  infer_instance
+  simp [e01BaseTransition]
 
 instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
   intro a b
-  exact isFalse (by simp [e01AdmissibleTransition])
+  simp [e01AdmissibleTransition]
 
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
-  infer_instance
+  simp [d01CorrespondenceTransitionV1]
 
 instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
   intro a b
-  infer_instance
+  simp [d01CorrespondenceTransitionV2]
 
 instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
-  infer_instance
+  simp [s01ConcreteTransition]
 
 /-!
 Canonical fixture correspondence:
