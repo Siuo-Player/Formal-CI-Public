@@ -21,6 +21,7 @@ import FiniteBridge.ExecutableSearchBridge
 import FiniteBridge.ExecutableTargetSearchResult
 import FiniteBridge.ConcreteSearchAdapter
 import FiniteBridge.ConcreteRunnerRefinement
+import FiniteBridge.G7BenchmarkOracle
 import FiniteBridge.ZeroLengthBridge
 
 namespace FiniteBridge
