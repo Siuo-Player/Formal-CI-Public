@@ -27,41 +27,50 @@ def forbiddenTransition (r : Transition n) (forbidden : Finset (State n))
     : Transition n :=
   fun a b => a ∉ forbidden ∧ b ∉ forbidden ∧ r a b
 
+/-- V01: START → FOREST → BRIDGE → TOWER. -/
+def v01CorrespondenceTransition : Transition 4 :=
+  fun a b =>
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 2) ∨
+    (a.val = 2 ∧ b.val = 3)
 
-def v01CorrespondenceTransition : Transition 4 := v01Transition
+/-- E01: START → FOREST → TOWER, with FOREST excluded by admissibility. -/
+def e01CorrespondenceTransition : Transition 3 :=
+  fun a b =>
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 2)
 
-def e01CorrespondenceTransition : Transition 3
-  | a, b => match a.val, b.val with
-    | 0, 1 => True
-    | 1, 2 => True
-    | _, _ => False
+/-- D01 v1: two valid branches from START to TOWER. -/
+def d01CorrespondenceTransitionV1 : Transition 4 :=
+  fun a b =>
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 1 ∧ b.val = 3) ∨
+    (a.val = 0 ∧ b.val = 2) ∨
+    (a.val = 2 ∧ b.val = 3)
 
-def d01CorrespondenceTransitionV1 : Transition 4
-  | a, b => match a.val, b.val with
-    | 0, 1 => True
-    | 1, 3 => True
-    | 0, 2 => True
-    | 2, 3 => True
-    | _, _ => False
-
+/-- D01 v2 removes NORTH (state 1) from admissible transitions. -/
 def d01CorrespondenceTransitionV2 : Transition 4 :=
   forbiddenTransition d01CorrespondenceTransitionV1 ({1} : Finset (State 4))
 
 instance e01Decidable : DecidableRel e01CorrespondenceTransition := by
   intro a b
-  exact inferInstance
+  dsimp [e01CorrespondenceTransition]
+  infer_instance
 
 instance d01v1Decidable : DecidableRel d01CorrespondenceTransitionV1 := by
   intro a b
-  exact inferInstance
+  dsimp [d01CorrespondenceTransitionV1]
+  infer_instance
 
 instance d01v2Decidable : DecidableRel d01CorrespondenceTransitionV2 := by
   intro a b
-  exact inferInstance
+  dsimp [d01CorrespondenceTransitionV2, forbiddenTransition]
+  infer_instance
 
 instance v01Decidable : DecidableRel v01CorrespondenceTransition := by
   intro a b
-  exact inferInstance
+  dsimp [v01CorrespondenceTransition]
+  infer_instance
 
 /-!
 Canonical fixture correspondence:
@@ -91,7 +100,8 @@ def d01Target : State 4 := 3
 
 instance e01AdmissibleDecidable : DecidableRel e01AdmissibleTransition := by
   intro a b
-  exact inferInstance
+  dsimp [e01AdmissibleTransition, forbiddenTransition]
+  infer_instance
 
 example : oracleReachable v01CorrespondenceTransition 3 v01Start v01Target = true := by
   native_decide
@@ -143,18 +153,18 @@ abstract path exists while no concrete A-to-D path exists, so an abstraction
 result must not be promoted to concrete realizability.
 -/
 
-def s01ConcreteTransition : Transition 4
-  | a, b => match a.val, b.val with
-    | 0, 1 => True
-    | 2, 3 => True
-    | _, _ => False
+def s01ConcreteTransition : Transition 4 :=
+  fun a b =>
+    (a.val = 0 ∧ b.val = 1) ∨
+    (a.val = 2 ∧ b.val = 3)
 
 def s01Start : State 4 := 0
 def s01Target : State 4 := 3
 
 instance s01Decidable : DecidableRel s01ConcreteTransition := by
   intro a b
-  exact inferInstance
+  dsimp [s01ConcreteTransition]
+  infer_instance
 
 example : oracleReachable s01ConcreteTransition 3 s01Start s01Target = false := by
   native_decide
